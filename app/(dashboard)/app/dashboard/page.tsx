@@ -7,10 +7,6 @@ import Stats from "@/components/stats";
 import React from "react";
 
 export default async function DashboardPage() {
-  const res = await fetch(
-    "https://bytegrad.com/course-assets/projects/petsoft/api/pets"
-  );
-  const pets = await res.json();
   return (
     <main>
       <div className="flex justify-between items-center text-white py-8">
@@ -25,7 +21,7 @@ export default async function DashboardPage() {
 
         <div className="relative md:row-start-2 md:row-span-full md:col-start-1 md:col-span-1">
           <ContentBlock>
-            <PetList pets={pets} />
+            <PetList />
           </ContentBlock>
         </div>
 
