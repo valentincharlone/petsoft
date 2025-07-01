@@ -36,6 +36,7 @@ const EmptyView = () => {
 };
 
 const TopBaR = ({ pet }: Props) => {
+  const { handleCheckoutPet } = usePetContext();
   const [isPending, startTransition] = useTransition();
   return (
     <div className="flex items-center bg-white px-8 py-5 border-b border-light">
@@ -52,11 +53,7 @@ const TopBaR = ({ pet }: Props) => {
         <PetButton
           actionType="checkout"
           disabled={isPending}
-          onClick={() => {
-            startTransition(async () => {
-              await deletePet(pet.id);
-            });
-          }}
+          onClick={async () => await handleCheckoutPet(pet.id)}
         >
           Checkout
         </PetButton>
