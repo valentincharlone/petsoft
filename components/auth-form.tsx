@@ -3,7 +3,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
-export default function AuthForm() {
+export default function AuthForm({ type }: { type: "logIn" | "signUp" }) {
   return (
     <form action="">
       <div className="space-y-1">
@@ -15,7 +15,9 @@ export default function AuthForm() {
         <Input id="password" type="password" className="border-zinc-400" />
       </div>
 
-      <Button className="mt-4">Log In</Button>
+      <Button className="mt-4">
+        {type === "logIn" ? "Log In" : "Sign Up"}
+      </Button>
     </form>
   );
 }
