@@ -7,29 +7,14 @@ import { Textarea } from "./ui/textarea";
 import PetFormBtn from "./pet-form-btn";
 import { usePetContext } from "@/lib/hooks";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DEFAULT_PET_IMAGE } from "@/lib/constants";
+import { petFormSchema, TPetForm } from "@/lib/validations";
 
 type PetFormProps = {
   actionType: "edit" | "add";
   onFormSubmission: () => void;
 };
-
-const petFormSchema = z
-  .object({
-    name: z.string().trim().min(1, "Name is required").max(100),
-    ownerName: z.string().trim().min(1, "Owner name is required").max(100),
-    imageUrl: z.string().trim().url("Invalid image URL"),
-    age: z.coerce.number().int().positive().max(9999),
-    notes: z.string().trim().max(1000),
-  })
-  .transform((data) => ({
-    ...data,
-    imageUrl: data.imageUrl || DEFAULT_PET_IMAGE,
-  }));
-
-type TPetForm = z.infer<typeof petFormSchema>;
 
 export default function PetForm({
   actionType,
@@ -43,6 +28,13 @@ export default function PetForm({
     formState: { errors },
   } = useForm<TPetForm>({
     resolver: zodResolver(petFormSchema),
+    defaultValues: {
+      name: selectedPet?.name,
+      ownerName: selectedPet?.ownerName,
+      imageUrl: selectedPet?.imageUrl,
+      age: selectedPet?.age,
+      notes: selectedPet?.notes,
+    },
   });
 
   const handleSubmit = async () => {
