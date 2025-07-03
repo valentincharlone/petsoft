@@ -1,21 +1,41 @@
 "use server";
 
-import { signIn } from "@/lib/auth";
+import { signIn, signOut } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { PetEssentials } from "@/lib/types";
 import { sleep } from "@/lib/utils";
 import { petFormSchema } from "@/lib/validations";
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 // -- user actions --
 
-export async function logIn(authData: FormData) {
-  await signIn("credentials", {
-    email: authData.get("email"),
-    password: authData.get("password"),
-  });
-  console.log(authData);
+export async function logIn(formData: FormData) {
+  await signIn("credentials", formData);
+  redirect("/app/dashboard");
 }
+
+export async function signUp(formData: FormData) {
+  const hashedPassword = await bcrypt.hash(
+    formData.get("password") as string,
+    10
+  );
+  await prisma.user.create({
+    data: {
+      email: formData.get("email") as string,
+      hashedPassword,
+    },
+  });
+
+  await signIn("credentials", formData);
+}
+
+export async function logOut() {
+  await signOut({ redirectTo: "/" });
+}
+
+// -- pet actions --
 
 export async function addPet(pet: PetEssentials) {
   await sleep(1000);
