@@ -1,10 +1,21 @@
 "use server";
 
+import { signIn } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { PetEssentials } from "@/lib/types";
 import { sleep } from "@/lib/utils";
 import { petFormSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
+
+// -- user actions --
+
+export async function logIn(authData: FormData) {
+  await signIn("credentials", {
+    email: authData.get("email"),
+    password: authData.get("password"),
+  });
+  console.log(authData);
+}
 
 export async function addPet(pet: PetEssentials) {
   await sleep(1000);
