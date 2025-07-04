@@ -5,7 +5,8 @@ import prisma from "@/lib/db";
 import { checkAuth, getPetById } from "@/lib/server-utils";
 import { PetEssentials } from "@/lib/types";
 import { sleep } from "@/lib/utils";
-import { petFormSchema } from "@/lib/validations";
+import { authSchema, petFormSchema } from "@/lib/validations";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -22,17 +23,43 @@ export async function logIn(formData: unknown) {
   redirect("/app/dashboard");
 }
 
-export async function signUp(formData: FormData) {
-  const hashedPassword = await bcrypt.hash(
-    formData.get("password") as string,
-    10
-  );
-  await prisma.user.create({
-    data: {
-      email: formData.get("email") as string,
-      hashedPassword,
-    },
-  });
+export async function signUp(formData: unknown) {
+  if (!(formData instanceof FormData)) {
+    return {
+      message: "Invalid form data.",
+    };
+  }
+  const formDataObj = Object.fromEntries(formData.entries());
+
+  const validateFormData = authSchema.safeParse(formDataObj);
+  if (!validateFormData.success) {
+    return {
+      message: "Invalid form data.",
+    };
+  }
+
+  const { email, password } = validateFormData.data;
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  try {
+    await prisma.user.create({
+      data: {
+        email,
+        hashedPassword,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return {
+          message: "Email already exists.",
+        };
+      }
+    }
+    return {
+      message: "Could not create user.",
+    };
+  }
 
   await signIn("credentials", formData);
 }
