@@ -2,7 +2,7 @@
 
 import { signIn, signOut } from "@/lib/auth";
 import prisma from "@/lib/db";
-import { checkAuth } from "@/lib/server-utils";
+import { checkAuth, getPetById } from "@/lib/server-utils";
 import { PetEssentials } from "@/lib/types";
 import { sleep } from "@/lib/utils";
 import { petFormSchema } from "@/lib/validations";
@@ -12,7 +12,12 @@ import { redirect } from "next/navigation";
 
 // -- user actions --
 
-export async function logIn(formData: FormData) {
+export async function logIn(formData: unknown) {
+  if (!(formData instanceof FormData)) {
+    return {
+      message: "Invalid form data.",
+    };
+  }
   await signIn("credentials", formData);
   redirect("/app/dashboard");
 }
@@ -82,11 +87,7 @@ export async function editPet(petId: string, newPetData: PetEssentials) {
     };
   }
 
-  const pet = await prisma.pet.findUnique({
-    where: {
-      id: petId,
-    },
-  });
+  const pet = await getPetById(petId);
   if (!pet) {
     return {
       message: "Pet not found.",
@@ -118,11 +119,7 @@ export async function deletePet(petId: string) {
 
   const session = await checkAuth();
 
-  const pet = await prisma.pet.findUnique({
-    where: {
-      id: petId,
-    },
-  });
+  const pet = await getPetById(petId);
   if (!pet) {
     return {
       message: "Pet not found.",
