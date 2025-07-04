@@ -1,13 +1,16 @@
 "use client";
 
-import React from "react";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
 import { logIn, signUp } from "@/actions/actions";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import AuthFormBtn from "./auth-form-btn";
 import { useFormState } from "react-dom";
 
-export default function AuthForm({ type }: { type: "logIn" | "signUp" }) {
+type AuthFormProps = {
+  type: "logIn" | "signUp";
+};
+
+export default function AuthForm({ type }: AuthFormProps) {
   const [signUpError, dispatchSignUp] = useFormState(signUp, undefined);
   const [logInError, dispatchLogIn] = useFormState(logIn, undefined);
 
@@ -17,17 +20,22 @@ export default function AuthForm({ type }: { type: "logIn" | "signUp" }) {
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
-          type="email"
           name="email"
+          type="email"
+          required
+          maxLength={100}
           className="border-zinc-400"
         />
       </div>
-      <div className="mt-2 space-y-1">
+
+      <div className="mb-4 mt-2 space-y-1">
         <Label htmlFor="password">Password</Label>
         <Input
           id="password"
-          type="password"
           name="password"
+          type="password"
+          required
+          maxLength={100}
           className="border-zinc-400"
         />
       </div>
