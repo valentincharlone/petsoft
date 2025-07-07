@@ -10,7 +10,9 @@ import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // -- user actions --
 
 export async function logIn(prevState: unknown, formData: unknown) {
@@ -193,4 +195,30 @@ export async function deletePet(petId: string) {
     };
   }
   revalidatePath("/app", "layout");
+}
+
+// -- payment actions --
+
+export async function createCheckoutSession() {
+  try {
+    const session = await checkAuth();
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      customer_email: session.user.email,
+      line_items: [
+        {
+          price: "price_1RiEI74ISXJs2sChofaSM1Q0",
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${process.env.CANONICAL_URL}/payment?success=true`,
+      cancel_url: `${process.env.CANONICAL_URL}/payment?cancelled=true`,
+    });
+
+    redirect(checkoutSession.url);
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    throw error;
+  }
 }
