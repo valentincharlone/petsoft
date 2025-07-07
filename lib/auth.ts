@@ -2,7 +2,7 @@ import NextAuth, { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { getUserByEmail } from "./server-utils";
-import { authSchema, TAuth } from "@/lib/validations";
+import { authSchema } from "@/lib/validations";
 
 const config = {
   pages: {
@@ -43,7 +43,7 @@ const config = {
       if (!isLoggedIn && isTryingToAccessApp) {
         return false;
       }
-      if (isLoggedIn && isTryingToAccessApp) {
+      if (isLoggedIn && isTryingToAccessApp && auth?.user.hasAccess) {
         return true;
       }
       if (isLoggedIn && !isTryingToAccessApp) {
@@ -65,12 +65,14 @@ const config = {
     jwt: ({ token, user }) => {
       if (user) {
         token.userId = user.id;
+        token.hasAccess = user.hasAccess;
       }
       return token;
     },
     session: ({ session, token }) => {
       if (session.user) {
         session.user.id = token.userId;
+        session.user.hasAccess = token.hasAccess;
       }
       return session;
     },
