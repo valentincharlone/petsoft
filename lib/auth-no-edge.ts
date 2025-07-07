@@ -10,22 +10,29 @@ const config = {
   providers: [
     Credentials({
       async authorize(credentials) {
-        const validateFormData = authSchema.safeParse(credentials);
-        if (!validateFormData.success) {
+        // runs on login
+
+        // validation
+        const validatedFormData = authSchema.safeParse(credentials);
+        if (!validatedFormData.success) {
           return null;
         }
 
-        const { email, password } = validateFormData.data;
+        // extract values
+        const { email, password } = validatedFormData.data;
 
         const user = await getUserByEmail(email);
         if (!user) {
+          console.log("No user found");
           return null;
         }
+
         const passwordsMatch = await bcrypt.compare(
           password,
           user.hashedPassword
         );
         if (!passwordsMatch) {
+          console.log("Invalid credentials");
           return null;
         }
 
